@@ -1,5 +1,5 @@
 task: joint
-model_config: configs/model/y26_focus_fourier.yaml
+model_config: configs/model/fcn_focus_contour.yaml
 data_config: configs/data/joint_data.yaml
 output_dir: runs/joint
 epochs: 100
