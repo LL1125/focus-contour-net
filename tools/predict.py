@@ -15,7 +15,7 @@ from engine.predictor import Predictor
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run end-to-end prediction.")
-    parser.add_argument("--model-config", type=Path, default=ROOT / "configs" / "model" / "y26_base.yaml")
+    parser.add_argument("--model-config", type=Path, default=ROOT / "configs" / "model" / "fcn_base.yaml")
     parser.add_argument("--weights", type=Path, default=None)
     parser.add_argument("--image", type=Path, required=True)
     parser.add_argument("--device", type=str, default="auto")
