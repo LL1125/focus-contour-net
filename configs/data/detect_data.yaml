@@ -1,0 +1,7 @@
+path: data/example_detect
+train: images/train
+val: images/val
+test: images/val
+names:
+  0: object
+img_size: 640

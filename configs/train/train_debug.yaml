@@ -1,0 +1,21 @@
+task: detect
+model_config: configs/model/y26_base.yaml
+data_config: configs/data/detect_data.yaml
+output_dir: runs/debug
+epochs: 1
+batch_size: 2
+num_workers: 0
+img_size: 320
+learning_rate: 0.001
+weight_decay: 0.0005
+device: auto
+save_every: 1
+eval_every: 1
+resume: null
+seed: 42
+loss:
+  one2many_weight: 1.0
+  one2one_weight: 1.0
+  cls_weight: 1.0
+  box_weight: 5.0
+  iou_weight: 2.0
