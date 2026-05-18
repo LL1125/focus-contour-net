@@ -1,4 +1,4 @@
-"""Sanity-check model construction and a dummy forward pass."""
+"""Sanity-check FocusContourNet model construction and a dummy forward pass."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from engine import build_model, load_model_config
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check model creation and forward shapes.")
-    parser.add_argument("--model-config", type=Path, default=ROOT / "configs" / "model" / "y26_base.yaml")
+    parser.add_argument("--model-config", type=Path, default=ROOT / "configs" / "model" / "fcn_base.yaml")
     parser.add_argument("--img-size", type=int, default=320)
     return parser.parse_args()
 
