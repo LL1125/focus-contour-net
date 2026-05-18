@@ -8,7 +8,7 @@ from typing import Any
 import torch
 
 from models.common.utils import load_yaml
-from models.detectors import YOLO26Base, YOLO26FocusFourier
+from models.detectors import FCNBaseDetector, FCNFocusContourDetector
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -34,12 +34,12 @@ def load_model_config(model_config: str | Path | dict[str, Any]) -> dict[str, An
 
 
 def build_model(model_cfg: dict[str, Any]) -> torch.nn.Module:
-    """Instantiate the configured detector."""
-    model_type = model_cfg.get("model_type", "yolo26_base")
-    if model_type == "yolo26_base":
-        return YOLO26Base(model_cfg)
-    if model_type == "yolo26_focus_fourier":
-        return YOLO26FocusFourier(model_cfg)
+    """Instantiate the configured FocusContourNet detector."""
+    model_type = model_cfg.get("model_type", "fcn_base")
+    if model_type == "fcn_base":
+        return FCNBaseDetector(model_cfg)
+    if model_type == "fcn_focus_contour":
+        return FCNFocusContourDetector(model_cfg)
     raise ValueError(f"Unsupported model_type: {model_type}")
 
 
