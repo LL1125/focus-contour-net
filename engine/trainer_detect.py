@@ -45,6 +45,8 @@ class TrainerDetect:
         requested_output_dir = resolve_project_path(self.cfg.get("output_dir", "runs/detect/train"))
         if requested_output_dir.name == "detect":
             requested_output_dir = requested_output_dir / "train"
+        if not self.cfg.get("resume"):
+            requested_output_dir = self._increment_path(requested_output_dir)
         self.output_dir = requested_output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.weights_dir = self.output_dir / "weights"
@@ -75,6 +77,17 @@ class TrainerDetect:
             self.best_metric = float(checkpoint.get("best_metric", self.best_metric))
             self.best_val_loss = float(checkpoint.get("best_val_loss", self.best_val_loss))
             self.best_epoch = int(checkpoint.get("best_epoch", self.best_epoch))
+
+    @staticmethod
+    def _increment_path(base: Path) -> Path:
+        if not base.exists():
+            return base
+        suffix = 2
+        while True:
+            candidate = base.with_name(f"{base.name}{suffix}")
+            if not candidate.exists():
+                return candidate
+            suffix += 1
 
     def _load_class_names(self) -> dict[int, str]:
         names = self.data_cfg.get("names", self.model_cfg.get("names", {}))
@@ -172,8 +185,13 @@ class TrainerDetect:
     def _draw_boxes(self, image: Image.Image, boxes: torch.Tensor, labels: torch.Tensor, scores: torch.Tensor | None = None) -> Image.Image:
         canvas = image.copy()
         draw = ImageDraw.Draw(canvas)
+        img_w, img_h = canvas.size
         for idx, box in enumerate(boxes):
             x1, y1, x2, y2 = [float(v) for v in box.tolist()]
+            x1 = max(0.0, min(x1, float(img_w - 1)))
+            y1 = max(0.0, min(y1, float(img_h - 1)))
+            x2 = max(0.0, min(x2, float(img_w - 1)))
+            y2 = max(0.0, min(y2, float(img_h - 1)))
             cls_id = int(labels[idx].item()) if labels.numel() > idx else -1
             name = self.class_names.get(cls_id, str(cls_id))
             label = name
@@ -182,9 +200,18 @@ class TrainerDetect:
             color = (255, 180, 0)
             draw.rectangle((x1, y1, x2, y2), outline=color, width=3)
             text_bbox = draw.textbbox((x1, y1), label)
-            text_bg = (x1, max(0, y1 - (text_bbox[3] - text_bbox[1]) - 6), x1 + (text_bbox[2] - text_bbox[0]) + 8, y1)
-            draw.rectangle(text_bg, fill=color)
-            draw.text((text_bg[0] + 4, text_bg[1] + 2), label, fill=(0, 0, 0))
+            text_w = max(1.0, float(text_bbox[2] - text_bbox[0]))
+            text_h = max(1.0, float(text_bbox[3] - text_bbox[1]))
+            bg_x0 = max(0.0, x1)
+            bg_y1 = max(0.0, y1)
+            bg_y0 = max(0.0, bg_y1 - text_h - 6.0)
+            bg_x1 = min(float(img_w - 1), bg_x0 + text_w + 8.0)
+            y_top = min(bg_y0, bg_y1)
+            y_bottom = max(bg_y0, bg_y1)
+            x_left = min(bg_x0, bg_x1)
+            x_right = max(bg_x0, bg_x1)
+            draw.rectangle((x_left, y_top, x_right, y_bottom), fill=color)
+            draw.text((x_left + 4.0, y_top + 2.0), label, fill=(0, 0, 0))
         return canvas
 
     def _render_batch_grid(
